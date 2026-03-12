@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="source.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лаба 4</title>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let themeBtn = document.getElementById('themeToggle');
+        let page = document.body;
+        let saved = localStorage.getItem('theme');
+        if (saved == 'dark') {
+            page.classList.add('dark-theme');
+            themeBtn.textContent = 'Светлая тема';
+        } else {
+            themeBtn.textContent = 'Тёмная тема';
+        }
+        themeBtn.onclick = function() {
+            page.classList.toggle('dark-theme');
+            
+            if (page.classList.contains('dark-theme')) {
+                themeBtn.textContent = 'Светлая тема';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeBtn.textContent = 'Тёмная тема';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        let reviewsList = [
+            {
+                name: "Владислав Поздняков",
+                text: "Доставка на остров — это что-то! Привет всем! Хочу оставить отзыв об этом чуде техники. Заказал ошейник для своей девушки, она у меня с Филиппин. Красавица, глаз не отвесть! Но любит погулять, понимаешь ли. Доставка была сложная. Адрес указал — остров Самосиг, озеро Тоба, Индонезия. Она там в отпуске была. Курьер сначала не понял, куда ехать, потом вообще пропал. Но в итоге дошло! Упаковка немного помята, видимо, на корабле трепало. Сам ошейник — огонь! Подключил к телефону, всё работает. GPS показывает, где она. Камера четкая, видно даже, как она кокосы ест. Микрофон тоже хороший, слышно, как волны шумят. Один нюанс: когда она попыталась снять ошейник, сработала сигнализация. Я сразу позвонил, сказал: «Любимая, это ради твоей же безопасности!». Она немного обиделась, но потом простила. В общем, вещь полезная. Теперь я спокоен. Знаю, где она, с кем она и что она. Рекомендую всем подозрительным парням! Спасибо магазину! Пять звёзд!",
+                date: "2026-02-26"
+            },
+            {
+                name: "Екатерина.М",
+                text: "Девочки, это просто находка! Купила своему Ярику на годовщину, чтобы он чувствовал мою заботу 24/7. Он сначала сказал, что это «нарушение личных границ», но я объяснила, что границы — это для скучных людей. Теперь я всегда знаю, где он. А если он пытается снять ошейник, мне приходит уведомление. Очень удобно! Особенно функция 'Шепот Судьбы' — я слышу все его разговоры с коллегами. Теперь я в курсе, что на самом деле происходит у них на работе. Рекомендую!",
+                date: "2026-02-27"
+            }
+        ];
+        function showReviews() {
+            let container = document.getElementById('reviewsContainer');
+            if (container == null) return;
+            let reviews;
+            if (localStorage.getItem('reviews') != null) {
+                reviews = JSON.parse(localStorage.getItem('reviews'));
+            } else {
+                reviews = reviewsList;
+                localStorage.setItem('reviews', JSON.stringify(reviews));
+            }
+            container.innerHTML = '';
+            for (let i = 0; i < reviews.length; i++) {
+                let review = reviews[i];
+                let div = document.createElement('div');
+                div.className = 'review-item';
+                let header = document.createElement('div');
+                header.className = 'review-header';
+                let nameSpan = document.createElement('span');
+                nameSpan.className = 'review-name';
+                nameSpan.innerHTML = review.name;
+                let dateSpan = document.createElement('span');
+                dateSpan.className = 'review-date';
+                dateSpan.innerHTML = review.date;
+                let textDiv = document.createElement('div');
+                textDiv.className = 'review-text';
+                let p = document.createElement('p');
+                p.innerHTML = review.text;
+                header.appendChild(nameSpan);
+                header.appendChild(dateSpan);
+                textDiv.appendChild(p);
+                div.appendChild(header);
+                div.appendChild(textDiv);
+                container.appendChild(div);
+            }
+        }
+        function checkForm(name, text) {
+            let bad = false;
+            let nameErr = document.getElementById('nameError');
+            let textErr = document.getElementById('textError');
+            
+            if (nameErr) nameErr.innerHTML = '';
+            if (textErr) textErr.innerHTML = '';
+            if (name == '' || name.trim() == '') {
+                if (nameErr) nameErr.innerHTML = 'Напиши имя!';
+                bad = true;
+            } else if (name.trim().length < 2) {
+                if (nameErr) nameErr.innerHTML = 'Имя слишком короткое';
+                bad = true;
+            } else if (name.trim().length > 50) {
+                if (nameErr) nameErr.innerHTML = 'Имя слишком длинное';
+                bad = true;
+            }
+            if (text == '' || text.trim() == '') {
+                if (textErr) textErr.innerHTML = 'Напиши отзыв!';
+                bad = true;
+            } else if (text.trim().length < 10) {
+                if (textErr) textErr.innerHTML = 'Отзыв слишком короткий (минимум 10 букв)';
+                bad = true;
+            } else if (text.trim().length > 1000) {
+                if (textErr) textErr.innerHTML = 'Отзыв слишком длинный (максимум 1000 букв)';
+                bad = true;
+            }
+            return !bad;
+        }
+        function addNewReview(name, text) {
+            let oldReviews;
+            if (localStorage.getItem('reviews') != null) {
+                oldReviews = JSON.parse(localStorage.getItem('reviews'));
+            } else {
+                oldReviews = reviewsList;
+            }
+            let today = new Date();
+            let year = today.getFullYear();
+            let month = today.getMonth() + 1;
+            let day = today.getDate();
+            if (month < 10) month = '0' + month;
+            if (day < 10) day = '0' + day;
+            let dateStr = year + '-' + month + '-' + day;
+            
+            let newOne = {
+                name: name.trim(),
+                text: text.trim(),
+                date: dateStr
+            };
+            oldReviews.unshift(newOne);
+            localStorage.setItem('reviews', JSON.stringify(oldReviews));
+            showReviews();
+        }
+        showReviews();
+        let form = document.getElementById('reviewForm');
+        if (form != null) {
+            form.onsubmit = function(event) {
+                event.preventDefault();
+
+                let inpName = document.getElementById('reviewName');
+                let inpText = document.getElementById('reviewText');
+                if (inpName != null && inpText != null) {
+                    let nameVal = inpName.value;
+                    let textVal = inpText.value;
+                    if (checkForm(nameVal, textVal)) {
+                        addNewReview(nameVal, textVal);
+                        inpName.value = '';
+                        inpText.value = '';
+                        alert('Спасибо, отзыв добавлен!');
+                    }
+                }
+            }
+        }
+    });
+    localStorage.removeItem('reviews')
+</script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1>Smart</h1>
+            <h1 id = "Orang">Collar</h1>
+        </div>
+        <div class="theme-toggle-container">
+        <button id="themeToggle" class="theme-toggle-btn">Тёмная тема</button>
+    </div>
+
+    </header>
+    <div class="container">
+
+        <main>
+    
+            <article class="present">
+                <section>
+                    <h2>НОВОЕ ИЗОБРЕТЕНИЕ??? ДАААА!!!</h2>
+                    <p>Мы живем в эпоху неопределенности.</p>
+                    <ol>
+                        <li>Я вышел 5 минут назад» (прошло 2 часа).</li>
+                        <li>Я с друзьями» (но на фото только девушки).</li>
+                        <li>Телефон разрядился» (в третьем часу ночи)</li>
+                    </ol>
+                    <p>Доверие — это хорошо, но геолокация точнее.</p>
+                </section>
+                <section>
+                    <h2>Решение</h2>
+                    <p>SmartCollar «Верный Друг» — первый в мире умный ошейник для партнеров, который превращает отношения в прозрачный квест.</p>
+                    <img id="ph1" src="photo_2026-02-21_20-13-39.jpg" alt="">
+                </section>
+                <section>
+                    <h2>Индивидуальная привязка (ID-Lock)</h2>
+                    <p>Ошейник не работает без регистрации!</p>
+                    <ul>
+                        <li>Сканирование паспорта (чтобы знать, кого именно теряем).</li>
+                        <li>Сканирование отпечатка пальца (для доступа к панели управления).</li>
+                        <li>Клятва верности (записывается на встроенный микрофон и загружается в облако навсегда).</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Функционал</h2>
+                    <ol>
+
+                        <li> GPS-Трекер «Где Ты?»
+                            <ul>
+                                <li>Режим «За хлебом»: Показывает маршрут до ближайшего магазина. Если маршрут ведет в бар — отправляет уведомление: «Мы знаем, что ты делаешь».</li>
+                                <li>Режим «Пробки»: Если партнер стоит на месте дольше 10 минут, ошейник вибрирует и спрашивает: «Ты застрял или задумаешься о жизни?».</li>
+                            </ul>
+                        </li>
+
+                        <li> HD-Камера «Всё вижу»
+                            <ul>
+                                <li>Включается автоматически при слове «Я скоро буду».</li>
+                                <li>Функция «Зум»: Позволяет разглядеть, кто сидит напротив за столиком в кафе.</li>
+                                <li>Ночной режим: Чтобы видеть, куда вы «уезжаем» ночью (привет, Наташа!).</li>
+                            </ul>
+                        </li>
+
+                        <li> Микрофон «Шепот Судьбы»
+                            <ul>
+                                <li>Транслирует все разговоры в реальном времени в приложение владельца.</li>
+                                <li>Фильтр «Правда»: Автоматически выделяет голосом фразы-маркеры: «бывшая», «голова болит», «задержусь».</li>
+                                <li>Режим «Запись» для использования в суде при разделе имущества.</li>
+                            </ul>
+                        </li>
+
+                        <li> Электро-шок «Напоминание» (Опция Premium)
+                            <ul>
+                                <li>Легкая вибрация, если партнер забыл ответить на сообщение в течение 5 минут.</li>
+                                <li>Режим «Позвони маме» (автоматически набирает номер тещи/свекрови).</li>
+                            </ul>
+                        </li>
+
+                    </ol>
+                </section>
+
+                <section>
+                    <ol><h2>ТОП-5 причин купить SmartCollar «Верный Друг»</h2>
+                        <li>
+                            <h3>Экономия времени на вопрос «Где ты?»</h3>
+                            <p>Проблема: Вы тратите 47 минут в день на переписку «Ты скоро?», «Где ты?», «Почему не берешь трубку?».
+<br>Решение: Открыли приложение — увидели координаты, фото с камеры и уровень заряда телефона партнера.
+<br>Бонус: Освободившееся время можно потратить на что-то полезное. Например, на проверку его истории браузера.
+</p>
+                        </li>
+                        <li>
+                            <h3>Гарантия, что «с друзьями» — это правда</h3>
+                            <p>Проблема: Фраза «Я с друзьями» может означать что угодно: от посиделок в гараже до романтического ужина на крыше.
+<br>Решение: Камера SmartCollar транслирует видео в реальном времени. Вы лично убедитесь, что это действительно друзья… или начнете собирать чемоданы.
+<br>Фишка: Автоматическое распознавание лиц. Если в кадре появляется бывшая — вам приходит push-уведомление: «Тревога! Уровень опасности: ВЫСОКИЙ».</p>
+                        </li>
+                        <li>
+                            <h3>Встроенный детектор правды</h3>
+                            <p>Проблема: «Я не ел твой торт», «Это не мой номер в телефоне», «Мы просто общаемся».
+<br>Решение: Микрофон + ИИ-анализ голоса определяют стресс, ложь и попытки уклониться от ответа.
+<br>Результат: Ошейник мягко вибрирует, когда партнер врет. А если врет нагло — включает сирену (опция «Для особо подозрительных»).
+</p>
+                        </li>
+                        <li>
+                            <h3>Вы больше не пропустите ничего важного</h3>
+                            <p>Проблема: Партнер «забыл» рассказать про встречу с коллегой, случайный комплимент официантке или спонтанную поездку за город.
+<br>Решение: SmartCollar записывает всё. Вы можете в любой момент включить режим «Повтор» и переслушать ключевые моменты дня.
+<br>Дополнительно: Автоматическая вырезка скучных фрагментов. Оставляются только: «привет, красотка», «никому не говори» и «это была ошибка».</p>
+                        </li>
+                        <li>
+                            <h3>Абсолютное спокойствие… или хотя бы иллюзия контроля</h3>
+                            <p>Проблема: Отношения — это всегда риск. А риск — это стресс. Стресс — это морщины.
+<br>Решение: SmartCollar дает вам чувство полного контроля над ситуацией. Пусть даже это чувство ложное.
+<br>Философский бонус: Если партнер всё равно найдёт способ обмануть систему — значит, он действительно достоин вас. А ошейник поможет отследить, как именно он это сделал (для работы над ошибками).</p>
+                        </li>
+                    </ol>
+                </section>
+        
+            </article>
+            <article class="otz">
+    <h2>ОТЗЫВЫ ПОКУПАТЕЛЕЙ</h2>
+    <div id="reviewsContainer">
+    </div>
+    <div class="review-form-container">
+        <h3>Оставить отзыв</h3>
+        <form id="reviewForm">
+            <div class="form-group">
+                <label for="reviewName">Ваше имя:</label>
+                <input type="text" id="reviewName" placeholder="Введите имя" required>
+                <span class="error-message" id="nameError"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="reviewText">Ваш отзыв:</label>
+                <textarea id="reviewText" placeholder="Напишите ваш отзыв" rows="4" required></textarea>
+                <span class="error-message" id="textError"></span>
+            </div>
+            
+            <button type="submit" id="submitReview">Добавить отзыв</button>
+        </form>
+    </div>
+</article>
+ 
+            
+    
+        </main>
+    
+        <aside>
+
+            <section class="rek" id="rek1">
+                <img src="photo_2026-02-21_22-13-23.jpg" alt="">
+                <p><a href="reklama.html" target="_blank">НОВАЯ ИГРА ОТ ЗОЛО!</a></p>
+            </section>
+
+            <section class="rek" id="rek2">
+                <img src="images.jpg"  alt="">
+                <p><a href="error.html" target="_blank">Лудоман? Запишись!</a></p>
+                <p>89000000</p>
+            </section>
+
+            <section class="rek", id="rek3">
+                <img src="images (1).jpg" alt="">
+                <p>С ней точно победишь!</p>
+            </section>
+
+        </aside>
+
+    </div>
+    
+</body>
+</html>
