@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Битва реперов</title>
+    <meta name="description" content="Создай свою колоду из реперов и оценивай их по параметрам">
+    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+
+
+<body>
+
+    <header>
+        <h1>БИТВА РЕПЕРОВ</h1>
+        <p class="subtitle">Создай свою уникальную колоду из реперов!</p>
+        <nav class="controls" aria-label="Управление коллекцией">
+            <button id="toggleEditBtn" class="btn btn-primary" aria-label="Переключить режим редактирования">
+                Редактировать
+            </button>
+            <button id="addCardBtn" class="btn btn-suc" style="display:none;" aria-label="Добавить новую карточку">
+                Добавить
+            </button>
+            <button id="resetBtn" class="btn btn-danger" aria-label="Сбросить все изменения">
+                Сброс
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="cardsContainer" class="cards-grid" aria-label="Коллекция карточек рэперов">
+
+        </section>
+    </main>
+
+  
+    <div id="addModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+        <div class="modal-content">
+            <button class="close-modal" aria-label="Закрыть">&times;</button>
+            
+            <h2 id="modalTitle">Новый музыкант</h2>
+            <p id="modalDesc" class="visually-hidden">Заполните форму для создания новой карточки рэпера</p>
+            
+            <form id="addForm">
+                <fieldset>
+                    <legend>Информация о музыканте</legend>
+                    
+                    <label>
+                        Тип:
+                        <select id="newType" required aria-required="true">
+                            <option value="OldSchool">Old School</option>
+                            <option value="NewSchool">New School</option>
+                            <option value="Underground">Underground</option>
+                        </select>
+                    </label>
+                    
+                    <label>
+                        Ник:
+                        <input type="text" id="newName" required aria-required="true" placeholder="например: 2Pac">
+                    </label>
+                    
+                    <label>
+                        Фото:
+                        <input type="url" id="newPhoto" required aria-required="true" placeholder="images/foto.jpg">
+                    </label>
+                    
+                    <label>
+                        Бит (1-10):
+                        <input type="number" id="newBeat" min="1" max="10" required aria-required="true">
+                    </label>
+                    
+                    <label>
+                        Текст (1-10):
+                        <input type="number" id="newLyrics" min="1" max="10" required aria-required="true">
+                    </label>
+                    
+                    <label>
+                        Описание:
+                        <textarea id="newDesc" required aria-required="true" rows="3"></textarea>
+                    </label>
+                </fieldset>
+                
+                <button type="submit" class="btn btn-suc">Создать карточку</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>Лабораторная работа номер 5</p>
+        <p>Коллекционная карточная игра</p>
+    </footer>
+
+</body>
+</html>
