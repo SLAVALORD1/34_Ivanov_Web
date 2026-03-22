@@ -1,3 +1,20 @@
+function renderPage(cards, isEditMode, containerId = 'cardsContainer') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    let cardsHtml = '';
+    for (const card of cards) {
+        cardsHtml += card.render(isEditMode);
+    }
+    
+    if (cardsHtml === '') {
+        cardsHtml = '<div class="empty-state">Нет карточек. Нажмите "Добавить"</div>';
+    }
+    
+    container.innerHTML = cardsHtml;
+}
+
+
 class MusicCard {
     #id;
     #name; 
@@ -5,6 +22,7 @@ class MusicCard {
     #beatQ; 
     #lyrQ; 
     #desc;
+    
     constructor(name, img, beatQ, lyrQ, desc, id = null) {
         this.#id = id || crypto.randomUUID();
         this.#name = name;
@@ -73,6 +91,11 @@ class OldSchoolRapper extends MusicCard { getType() { return 'type-old-school'; 
 class NewSchoolRapper extends MusicCard { getType() { return 'type-new-school'; } }
 class UndergroundRapper extends MusicCard { getType() { return 'type-underground'; } }
 
+
+
+
+
+
 class App {
     constructor() {
         this.cards = [];
@@ -87,7 +110,7 @@ class App {
 
     init() {
         this.load();
-        this.render();
+        renderPage(this.cards, this.edit);
         this.setupEvents();
     }
 
@@ -99,7 +122,7 @@ class App {
             
             this.cards = data.map(i => {
                 if (seenIds.has(i.id)) {
-                    i.id = 'card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    i.id = crypto.randomUUID();
                 }
                 seenIds.add(i.id);
                 
@@ -111,15 +134,14 @@ class App {
             });
         } else {
             this.cards = [
-                new OldSchoolRapper("Eminem", "images/shutterstock_1632717139.jpg", 8, 10, "Легенда хип-хопа. Мастер рифмы и скорочтения. Быстрый, ловкий."),
+                new OldSchoolRapper("Eminem", "images/shutterstock_1632717139.jpg", 8, 10, "Легенда хип-хопа. Мастер рифмы и скорочтения."),
                 new NewSchoolRapper("Мейби Бейби", "images/Мэйби_Бэйби.png", 8, 10, "Подружка Доры. Зафрендзонит любого заводчанина."),
                 new NewSchoolRapper("Моргенштерн (иноагент в РФ)", "images/2ee68768979e54f92a1e31e2739544bc.1000x1000x1.png", 10, 6, "Женщина года. Особенность персонжа - универсальность."),
-                new NewSchoolRapper("Travis Scott", "images/7ba0d6551733ef9_400x400.jpg", 10, 6, "Король автотюна и атмосферных битов. Его треки лечат"),
-                new OldSchoolRapper("Oxxxymiron (иноагент в РФ)", "images/b5W2b_VgehU.jpg", 6, 9, "*****, ******, *****, *** ... Заставит любого спать после 10 минут читки и 50-ти этажных рифм."),
-                new UndergroundRapper("Овсянкин", "images/unnamed.jpg", 5, 9, "Представитель андеграунда с глубокими текстами. Введет в депрессию любого"),
-                new NewSchoolRapper("Дора", "images/54327623.jpg", 10, 10, "Убийца всех мужиков на заводе. Используй эту карточку, чтобы победить прораба."),
-                
-                new NewSchoolRapper("Макар", "images/macan-o-voine.jpg", 3, 1, "Джеб Джеб, слева джеб, справа джет, джеб джеб. Крип")
+                new NewSchoolRapper("Travis Scott", "images/7ba0d6551733ef9_400x400.jpg", 10, 6, "Король автотюна и атмосферных битов."),
+                new OldSchoolRapper("Oxxxymiron (иноагент в РФ)", "images/b5W2b_VgehU.jpg", 6, 9, "Мастер сложных рифм."),
+                new UndergroundRapper("Овсянкин", "images/unnamed.jpg", 5, 9, "Представитель андеграунда с глубокими текстами."),
+                new NewSchoolRapper("Дора", "images/54327623.jpg", 10, 10, "Убийца всех мужиков на заводе."),
+                new NewSchoolRapper("Макар", "images/macan-o-voine.jpg", 3, 1, "Джеб Джеб, слева джеб, справа джет.")
             ];
             this.save();
         }
@@ -129,13 +151,8 @@ class App {
         const data = this.cards.map(c => c.toJSON());
         localStorage.setItem('rapDB', JSON.stringify(data));
     }
-
-    render() {
-        let html = '';
-        for (const card of this.cards) {
-            html += card.render(this.edit);
-        }
-        this.container.innerHTML = html;
+    refresh() {
+        renderPage(this.cards, this.edit);
     }
 
     toggleEdit() {
@@ -144,8 +161,9 @@ class App {
         this.toggleBtn.textContent = this.edit ? 'Сохранить' : 'Редактировать';
         this.toggleBtn.classList.toggle('active', this.edit);
         this.addBtn.style.display = this.edit ? 'inline-block' : 'none';
+        
         if (!this.edit) this.save();
-        this.render();
+        renderPage(this.cards, this.edit);
     }
 
     upd(id, key, val) {
@@ -160,14 +178,14 @@ class App {
         } else {
             card[field] = val;
         }
-        console.log(`Обновлено: ${card.name} | ${field} = ${val}`);
+        renderPage(this.cards, this.edit);
     }
 
     rm(id) {
         if (confirm('Удалить карту?')) {
             this.cards = this.cards.filter(c => c.id !== id);
             this.save();
-            this.render();
+            renderPage(this.cards, this.edit);
         }
     }
 
@@ -179,7 +197,7 @@ class App {
         }[type] || MusicCard;
         this.cards.push(new cls(name, img, +beat, +lyrics, desc));
         this.save();
-        this.render();
+        renderPage(this.cards, this.edit);
         this.closeModal();
     }
 
@@ -219,5 +237,8 @@ class App {
         this.modal.style.display = 'none';
     }
 }
+
+
+
 
 const app = new App();
