@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Коллекция собак + факты о котах</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div x-data="app()" x-init="init()">
+        <div class="header">
+            <h1>Коллекция собак</h1>
+            <div class="nav-menu">
+                <template x-for="page in pages" :key="page.id">
+                    <button @click="currentPage = page.id" 
+                            :class="{'nav-btn': true, 'active': currentPage === page.id}"
+                            x-text="page.name">
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <div class="container">
+            <div x-show="currentPage === 'random'" x-cloak>
+                <div class="section">
+                    <h2>Случайный пёс</h2>
+                    <div x-show="loading.random" class="loader">Загрузка собаки...</div>
+                    <div x-show="!loading.random">
+                        <div class="cards-grid">
+                            <div class="card">
+                                <img :src="randomDog.image" 
+                                     @error="randomDog.image='https://via.placeholder.com/300x220?text=Нет+фото'">
+                                <div class="card-content">
+                                    <h3>Пёсель дня</h3>
+                                    <div class="breed">Порода: <span x-text="randomDog.breed"></span></div>
+                                    <button @click="loadRandomDog" class="success">Другой песик</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="currentPage === 'breeds'" x-cloak>
+                <div class="section">
+                    <h2>Все породы</h2>
+                    <div x-show="loading.breeds" class="loader">Загрузка пород...</div>
+                    <div x-show="!loading.breeds">
+                        <div class="cards-grid">
+                            <template x-for="breed in breedsList" :key="breed">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <h3 x-text="breed"></h3>
+                                        <button @click="showBreedPhoto(breed)" class="success">Фото</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div x-show="breedsList.length === 0" class="empty">
+                            Не удалось загрузить список пород
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="currentPage === 'my'" x-cloak>
+                <div class="section">
+                    <h2>Моя коллекция</h2>
+                    
+                    <div class="form-card">
+                        <h3>Добавить собаку</h3>
+                        
+                        <div class="form-group">
+                            <label>Кличка</label>
+                            <input type="text" x-model="newDog.name" placeholder="Введите кличку">
+                            <div x-show="errors.name" class="error-message" x-text="errors.name"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Порода</label>
+                            <input type="text" x-model="newDog.breed" placeholder="Введите породу">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Комментарий</label>
+                            <textarea x-model="newDog.comment" rows="2" placeholder="Ваш комментарий"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>URL фото</label>
+                            <input type="url" x-model="newDog.img" placeholder="https://...">
+                        </div>
+                        
+                        <button @click="addDog" class="success">Добавить собаку</button>
+                    </div>
+                    
+                    <div x-show="myDogs.length > 0">
+                        <div class="cards-grid">
+                            <template x-for="dog in myDogs" :key="dog.id">
+                                <div class="card">
+                                    <img :src="dog.img" 
+                                         @error="dog.img='https://via.placeholder.com/300x220?text=Нет+фото'">
+                                    <div class="card-content">
+                                        <h3 x-text="dog.name"></h3>
+                                        <div class="breed">Порода: <span x-text="dog.breed || 'смешанная'"></span></div>
+                                        <p class="comment" x-text="dog.comment || 'Нет комментария'"></p>
+                                        <div class="btn-group">
+                                            <button @click="editDog(dog.id)" class="warning">Изменить</button>
+                                            <button @click="deleteDog(dog.id)" class="danger">Удалить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div x-show="myDogs.length === 0" class="empty">
+                        Коллекция пуста. Добавьте первую собаку
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="currentPage === 'facts'" x-cloak>
+                <div class="section">
+                    <h2>Факты о котах</h2>
+                    <div x-show="loading.facts" class="loader">Загрузка интересного факта...</div>
+                    <div x-show="!loading.facts">
+                        <div class="cards-grid">
+                            <div class="card fact-card">
+                                <div class="card-content">
+                                    <h3>Интересный факт</h3>
+                                    <p class="fact-text" x-text="catFact"></p>
+                                    <button @click="loadCatFact" class="success">Ещё факт</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Лабораторная работа номер 7</p>
+            <p>Собак в коллекции: <span x-text="myDogs.length"></span></p>
+        </footer>
+    </div>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        .error-message { color: #dc3545; font-size: 0.75rem; margin-top: 0.25rem; }
+        .comment { font-size: 0.85rem; color: #666; margin: 0.5rem 0; }
+        .fact-card { background: linear-gradient(135deg, #fffaf2 0%, #fff5e6 100%); }
+        .fact-text { font-size: 1.1rem; line-height: 1.6; margin: 1rem 0; color: #333; }
+    </style>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
